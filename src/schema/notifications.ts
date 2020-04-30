@@ -39,20 +39,44 @@ function itemsForKey(notification: any, key: string) {
 	return [...modifiedItems, ...createdItems];
 }
 
-function findDataId(
-	client: ZimbraInMemoryCache,
-	partialDataId: string = '$ROOT_QUERY',
-	predicate: (d: string) => any
-) {
-	const data =
-		client && get(client, 'cache.data.data', get(client, 'data.data'));
+function getDataFromCache(data: any): any {
+	if (!data.parent) {
+		return data.data;
+	}
+	return { ...data.data, ...getDataFromCache(data.parent) };
+}
+
+/**
+ * Given a partial dataId and a filter function, find list of full dataIds
+ * @param {ApolloCacheProxy} client     The Apollo cache
+ * @param {String} [partialDataId]      A part of the dataId, with or without variables
+ * @param {Function} [predicate]        A function to find the correct full dataId
+ * @returns {String}                    A list of full dataIds including variables if predicate succeeds else return empty array.
+ */
+function findDataId(client: ZimbraInMemoryCache, partialDataId: string, predicate: Function) {
+	const data = client && getDataFromCache(get(client, 'cache.data', get(client, 'data')));
+
 	if (!data) {
 		return;
 	}
-	return Object.keys(data).filter(
-		(dataId: string) =>
-			dataId.indexOf(partialDataId) !== -1 && predicate(dataId)
+
+	const dataIdTokens = partialDataId.split('.');
+	const numTokens = dataIdTokens.length;
+	const normalizedPath = dataIdTokens.slice(0, numTokens - 1).join('.');
+	const property = dataIdTokens[numTokens - 1];
+	const normalizedData = numTokens > 1 ? get(data, normalizedPath) : data;
+
+	const foundEntry = Object.keys(normalizedData).filter(
+		dataId =>
+			(!partialDataId || dataId.indexOf(property) !== -1) &&
+			predicate(`${normalizedPath ? `${normalizedPath}.` : ''}${dataId}`, normalizedData[dataId])
 	)[0];
+
+	let prefix = '';
+	if (numTokens > 1) {
+		prefix = `${dataIdTokens.slice(0, dataIdTokens.length - 1).join('.')}.`;
+	}
+	return `${prefix}${foundEntry}`;
 }
 
 function addNewItemToList(itemList: any, item: any, sortBy: any) {
@@ -77,7 +101,7 @@ function addNewItemToList(itemList: any, item: any, sortBy: any) {
 function getVariablesFromDataId(dataId: any) {
 	try {
 		return JSON.parse(dataId.replace(/^[^(]+\((.*)\)$/, '$1'));
-	} catch (e) {}
+	} catch (e) { }
 }
 
 /**
@@ -110,7 +134,9 @@ export class ZimbraNotifications {
 		this.handleFolderNotifications(notification);
 		this.handleConversationNotifications(notification);
 		this.handleMessageNotifications(notification);
-		this.handleContactNotifications(notification);
+		if (false) {
+			this.handleContactNotifications(notification);
+		}
 		this.handleTagsNotifications(notification);
 	};
 
@@ -242,12 +268,12 @@ export class ZimbraNotifications {
 				folderName === 'Trash'
 					? `in:\\\\"${folderName}\\\\"`
 					: item.attributes && item.attributes.type === 'group'
-					? typeGroup
-					: `in:\\\\"${folderName}\\\\" ${notTypeGroup}`;
+						? typeGroup
+						: `in:\\\\"${folderName}\\\\" ${notTypeGroup}`;
 
 			const queryRegex = new RegExp(query);
 
-			const id = findDataId(this.cache, '$ROOT_QUERY.search', dataId => {
+			const id = findDataId(this.cache, 'ROOT_QUERY.search', (dataId: any) => {
 				// check if query does not contain NOT #type:group but contains #type:group
 				if (
 					query.indexOf(notTypeGroup) === -1 &&
@@ -260,6 +286,8 @@ export class ZimbraNotifications {
 			});
 
 			const { sortBy }: any = getVariablesFromDataId(id) || {};
+
+			console.log('read id', id);
 
 			if (!searchResponse[query] && id) {
 				/**
@@ -284,6 +312,8 @@ export class ZimbraNotifications {
 					return;
 				}
 			}
+
+			console.log('search query after read', searchResponse[query]);
 			searchResponse[query] =
 				searchResponse[query] && searchResponse[query].contacts
 					? searchResponse[query]
@@ -318,7 +348,7 @@ export class ZimbraNotifications {
 		Object.keys(searchResponse).forEach(query => {
 			const queryRegex = new RegExp(query);
 
-			const id = findDataId(this.cache, '$ROOT_QUERY.search', dataId => {
+			const id = findDataId(this.cache, 'ROOT_QUERY.search', (dataId: any) => {
 				// check if query does not contain NOT #type:group but contains #type:group
 				if (
 					query.indexOf(notTypeGroup) === -1 &&
@@ -329,6 +359,8 @@ export class ZimbraNotifications {
 				}
 				return queryRegex.test(dataId);
 			});
+
+			console.log('id to updated', id);
 
 			if (id) {
 				this.cache.writeFragment({
@@ -354,9 +386,9 @@ export class ZimbraNotifications {
 				id: `Conversation:${item.id}`,
 				fragment: gql`
 						fragment ${generateFragmentName(
-							'conversationNotification',
-							item.id
-						)} on Conversation {
+					'conversationNotification',
+					item.id
+				)} on Conversation {
 							${attributeKeys(item)}
 						}
 					`,
@@ -407,7 +439,7 @@ export class ZimbraNotifications {
 
 		if (Object.keys(mbxItems).length) {
 			const accInfoRegExp = /^AccountInfo/;
-			const id = findDataId(this.cache, 'AccountInfo', dataId =>
+			const id = findDataId(this.cache, 'AccountInfo', (dataId: any) =>
 				accInfoRegExp.test(dataId)
 			);
 
@@ -445,9 +477,9 @@ export class ZimbraNotifications {
 				id: `MessageInfo:${item.id}`,
 				fragment: gql`
 						fragment ${generateFragmentName(
-							'messageNotification',
-							item.id
-						)} on MessageInfo {
+					'messageNotification',
+					item.id
+				)} on MessageInfo {
 							${attributeKeys(item)}
 						}
 					`,

@@ -1163,6 +1163,8 @@ export type Document = {
 
 export type DocumentInput = {
   id?: Maybe<Scalars['ID']>,
+  path?: Maybe<Scalars['String']>,
+  optional?: Maybe<Scalars['Int']>,
 };
 
 export type DtTimeInfo = {

@@ -192,6 +192,18 @@ function updateAbsoluteFolderPath(
 		return folder;
 	});
 }
+/**
+ * Some fields expect values to be String if it's single value, else array of values.
+ * i.e. Persona Email addresses - if single email address, it should be 'email@address.com',
+ * else it should be ['email1@address.com', 'email2@address.com']
+ * This method will return Array in all cases by converting string to Array of String.
+ * To empty value, it's value should be '' and not [].
+ * @param value Array or null value
+ */
+function convertStringAndArrayValues(value: any) {
+	const result = [].concat(value).filter(Boolean);
+	return result.length === 0 ? '' : result;
+}
 
 export class ZimbraBatchClient {
 	public notificationsEmitter: any;
@@ -473,11 +485,43 @@ export class ZimbraBatchClient {
 			body: {
 				identity: {
 					...rest,
-					_attrs: mapValues(attrs, coerceBooleanToString)
+					_attrs: {
+						...mapValues(attrs, coerceBooleanToString),
+						zimbraPrefWhenSentToAddresses: convertStringAndArrayValues(
+							get(attrs, 'zimbraPrefWhenSentToAddresses')
+						),
+						zimbraPrefWhenInFolderIds: convertStringAndArrayValues(
+							get(attrs, 'zimbraPrefWhenInFolderIds')
+						)
+					}
 				}
 			},
 			singleRequest: true
-		}).then(res => mapValuesDeep(res, coerceStringToBoolean));
+		}).then(res => {
+			const mappedResult = mapValuesDeep(res, coerceStringToBoolean);
+			const { _attrs, ...restIdentityProps } = get(mappedResult, 'identity.0');
+			return {
+				...mappedResult,
+				identity: [
+					{
+						...restIdentityProps,
+						_attrs: {
+							..._attrs,
+							...(_attrs.zimbraPrefWhenSentToAddresses && {
+								zimbraPrefWhenSentToAddresses: convertStringAndArrayValues(
+									get(_attrs, 'zimbraPrefWhenSentToAddresses')
+								)
+							}),
+							...(_attrs.zimbraPrefWhenInFolderIds && {
+								zimbraPrefWhenInFolderIds: convertStringAndArrayValues(
+									get(_attrs, 'zimbraPrefWhenInFolderIds')
+								)
+							})
+						}
+					}
+				]
+			};
+		});
 
 	public createMountpoint = (_options: CreateMountpointInput) =>
 		this.jsonRequest({
@@ -841,7 +885,31 @@ export class ZimbraBatchClient {
 		this.jsonRequest({
 			name: 'GetIdentities',
 			namespace: Namespace.Account
-		}).then(res => mapValuesDeep(res, coerceStringToBoolean));
+		}).then(({ identity, ...restResult }: any) => {
+			const updatedIdentity: any = identity.map(
+				({ _attrs, ...restIdentity }: any) => {
+					_attrs.zimbraPrefWhenInFolderIds = []
+						.concat(get(_attrs, 'zimbraPrefWhenInFolderIds'))
+						.filter(Boolean);
+					_attrs.zimbraPrefWhenSentToAddresses = []
+						.concat(get(_attrs, 'zimbraPrefWhenSentToAddresses'))
+						.filter(Boolean);
+
+					return {
+						...restIdentity,
+						_attrs
+					};
+				}
+			);
+
+			return mapValuesDeep(
+				{
+					...restResult,
+					identity: updatedIdentity
+				},
+				coerceStringToBoolean
+			);
+		});
 
 	public getMailboxMetadata = ({ section }: GetMailboxMetadataOptions) =>
 		this.jsonRequest({
@@ -1150,7 +1218,15 @@ export class ZimbraBatchClient {
 			body: {
 				identity: {
 					...rest,
-					_attrs: mapValues(attrs, coerceBooleanToString)
+					_attrs: {
+						...mapValues(attrs, coerceBooleanToString),
+						zimbraPrefWhenSentToAddresses: convertStringAndArrayValues(
+							get(attrs, 'zimbraPrefWhenSentToAddresses')
+						),
+						zimbraPrefWhenInFolderIds: convertStringAndArrayValues(
+							get(attrs, 'zimbraPrefWhenInFolderIds')
+						)
+					}
 				}
 			},
 			singleRequest: true

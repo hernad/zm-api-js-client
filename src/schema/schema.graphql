@@ -2577,7 +2577,6 @@ input ExternalAccountModifyAttrsInput {
 	accountType: AccountType
 	defaultSignature: ID
 	description: String
-	emailAddress: String
 	fromDisplay: String
 	name: String
 	replyToAddress: String
@@ -2586,6 +2585,7 @@ input ExternalAccountModifyAttrsInput {
 	storeAndForward: String
 	useAddressForForwardReply: Boolean
 	username: String
+	password: String
 	host: String
 	signatureValue: String
 	importOnly: Boolean

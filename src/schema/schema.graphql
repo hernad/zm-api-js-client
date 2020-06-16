@@ -2044,6 +2044,10 @@ type WhiteBlackList {
 	blackList: [WhiteBlackListArr]!
 }
 
+type NoOpResponse {
+	waitDisallowed: Boolean
+}
+
 input CalendarItemAlarmInput {
 	action: AlarmAction!
 	trigger: CalendarItemAlarmTriggerInput!
@@ -2916,7 +2920,7 @@ type Query {
 	getTrustedDevices: GetTrustedDevicesResponse
 	getWhiteBlackList: WhiteBlackList
 	getWorkingHours(names: [String!]!, start: Float, end: Float): [WorkingHours]
-	noop(wait: Int, limitToOneBlocked: Int): Boolean
+	noop(wait: Int, limitToOneBlocked: Int): NoOpResponse
 	getPreferences: Preferences
 	getDataSources: DataSources!
 	getIdentities: Identities

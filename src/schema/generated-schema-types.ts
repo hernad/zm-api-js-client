@@ -2636,11 +2636,13 @@ export type MutationRevokeRightsArgs = {
 
 export type MutationSaveDraftArgs = {
   message: SendMessageInput;
+  accountName?: Maybe<Scalars['String']>;
 };
 
 
 export type MutationSendMessageArgs = {
   message: SendMessageInput;
+  accountName?: Maybe<Scalars['String']>;
 };
 
 
@@ -2731,6 +2733,11 @@ export type NewMountpointSpec = {
   color?: Maybe<Scalars['Int']>;
   reminder?: Maybe<Scalars['Boolean']>;
   parentFolderId?: Maybe<Scalars['ID']>;
+};
+
+export type NoOpResponse = {
+  __typename?: 'NoOpResponse';
+  waitDisallowed?: Maybe<Scalars['Boolean']>;
 };
 
 export type NotifyAction = {
@@ -3000,7 +3007,7 @@ export type Query = {
   getTrustedDevices?: Maybe<GetTrustedDevicesResponse>;
   getWhiteBlackList?: Maybe<WhiteBlackList>;
   getWorkingHours?: Maybe<Array<Maybe<WorkingHours>>>;
-  noop?: Maybe<Scalars['Boolean']>;
+  noop?: Maybe<NoOpResponse>;
   getPreferences?: Maybe<Preferences>;
   getDataSources: DataSources;
   getIdentities?: Maybe<Identities>;

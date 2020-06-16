@@ -1246,7 +1246,7 @@ export class ZimbraBatchClient {
 			},
 			singleRequest: true,
 			fetchOptions
-		}).then(Boolean);
+		}).then(resp => resp);
 
 	public recoverAccount = ({ channel, email, op }: RecoverAccountOptions) =>
 		this.jsonRequest({

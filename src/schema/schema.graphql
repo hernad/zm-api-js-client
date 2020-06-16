@@ -223,7 +223,7 @@ enum NeedIsMemberType {
 	none
 }
 
-enum ReadingPaneLocation {
+enum PaneLocation {
 	off
 	right
 	bottom
@@ -1349,7 +1349,8 @@ type Preferences {
 	zimbraPrefOutOfOfficeSuppressExternalReply: Boolean
 	zimbraPrefOutOfOfficeUntilDate: String
 	zimbraPrefReadingPaneEnabled: Boolean
-	zimbraPrefReadingPaneLocation: ReadingPaneLocation
+	zimbraPrefReadingPaneLocation: PaneLocation
+	zimbraPrefBriefcaseReadingPaneLocation: PaneLocation
 	zimbraPrefPasswordRecoveryAddress: String
 	zimbraPrefPasswordRecoveryAddressStatus: PasswordRecoveryAddressStatus
 	zimbraPrefSaveToSent: Boolean
@@ -2272,7 +2273,8 @@ input PreferencesInput {
 	zimbraPrefOutOfOfficeSuppressExternalReply: Boolean
 	zimbraPrefOutOfOfficeUntilDate: String
 	zimbraPrefReadingPaneEnabled: Boolean
-	zimbraPrefReadingPaneLocation: ReadingPaneLocation
+	zimbraPrefReadingPaneLocation: PaneLocation
+	zimbraPrefBriefcaseReadingPaneLocation: PaneLocation
 	zimbraPrefSaveToSent: Boolean
 	zimbraPrefShowFragments: Boolean
 	zimbraPrefSlackCalendarReminderEnabled: Boolean

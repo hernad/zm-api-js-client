@@ -2773,6 +2773,12 @@ export type Owner = {
   _content?: Maybe<Scalars['String']>;
 };
 
+export enum PaneLocation {
+  Off = 'off',
+  Right = 'right',
+  Bottom = 'bottom'
+}
+
 export enum ParticipationRole {
   Req = 'REQ',
   Opt = 'OPT',
@@ -2856,7 +2862,8 @@ export type Preferences = {
   zimbraPrefOutOfOfficeSuppressExternalReply?: Maybe<Scalars['Boolean']>;
   zimbraPrefOutOfOfficeUntilDate?: Maybe<Scalars['String']>;
   zimbraPrefReadingPaneEnabled?: Maybe<Scalars['Boolean']>;
-  zimbraPrefReadingPaneLocation?: Maybe<ReadingPaneLocation>;
+  zimbraPrefReadingPaneLocation?: Maybe<PaneLocation>;
+  zimbraPrefBriefcaseReadingPaneLocation?: Maybe<PaneLocation>;
   zimbraPrefPasswordRecoveryAddress?: Maybe<Scalars['String']>;
   zimbraPrefPasswordRecoveryAddressStatus?: Maybe<PasswordRecoveryAddressStatus>;
   zimbraPrefSaveToSent?: Maybe<Scalars['Boolean']>;
@@ -2910,7 +2917,8 @@ export type PreferencesInput = {
   zimbraPrefOutOfOfficeSuppressExternalReply?: Maybe<Scalars['Boolean']>;
   zimbraPrefOutOfOfficeUntilDate?: Maybe<Scalars['String']>;
   zimbraPrefReadingPaneEnabled?: Maybe<Scalars['Boolean']>;
-  zimbraPrefReadingPaneLocation?: Maybe<ReadingPaneLocation>;
+  zimbraPrefReadingPaneLocation?: Maybe<PaneLocation>;
+  zimbraPrefBriefcaseReadingPaneLocation?: Maybe<PaneLocation>;
   zimbraPrefSaveToSent?: Maybe<Scalars['Boolean']>;
   zimbraPrefShowFragments?: Maybe<Scalars['Boolean']>;
   zimbraPrefSlackCalendarReminderEnabled?: Maybe<Scalars['Boolean']>;
@@ -3393,12 +3401,6 @@ export type QuerySearchGalArgs = {
   sortBy?: Maybe<Scalars['String']>;
   needExp?: Maybe<Scalars['Boolean']>;
 };
-
-export enum ReadingPaneLocation {
-  Off = 'off',
-  Right = 'right',
-  Bottom = 'bottom'
-}
 
 export type RecoverAccount = {
   __typename?: 'RecoverAccount';
